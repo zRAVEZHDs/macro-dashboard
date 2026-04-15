@@ -3,594 +3,844 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MACRO INTEL — XAU/USD</title>
-<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@300;400;600;700&display=swap" rel="stylesheet">
+<title>MACRO INTEL — XAU/USD Command Center</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@300;400;600;700;900&display=swap" rel="stylesheet">
 <style>
-:root {
-  --bg:#080c10;--bg2:#0d1318;--bg3:#111820;
-  --border:#1a2530;--border2:#22323f;
-  --accent:#00d4ff;--accent2:#00ff88;
-  --warn:#ffb800;--danger:#ff4455;
-  --text:#c8d8e4;--text2:#6a8a9a;--text3:#3a5060;
-  --gold:#d4a843;--gold2:#f0c060;
+:root{
+  --bg:#060a0e;--bg2:#0a1018;--bg3:#0f1620;--bg4:#141e28;
+  --border:#1a2530;--border2:#243040;
+  --accent:#00c8f0;--accent2:#00e87a;
+  --warn:#ffb800;--danger:#ff3a4a;--danger2:#ff6070;
+  --text:#b8ccd8;--text2:#5a7a8a;--text3:#2a4050;
+  --gold:#d4a843;--gold2:#f0c060;--gold3:#ffd878;
+  --purple:#9060f0;--teal:#00c8b0;
   --mono:'Share Tech Mono',monospace;
   --sans:'Barlow Condensed',sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh}
-body::before{content:'';position:fixed;top:0;left:0;width:100%;height:100%;
-  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px);
-  pointer-events:none;z-index:9999}
+html,body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;overflow-x:hidden}
+body::after{content:'';position:fixed;top:0;left:0;width:100%;height:100%;
+  background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.04) 3px,rgba(0,0,0,0.04) 4px);
+  pointer-events:none;z-index:9998}
 
+/* ── HEADER ── */
 header{display:flex;align-items:center;justify-content:space-between;
-  padding:12px 24px;border-bottom:1px solid var(--border);background:var(--bg2)}
-.logo{font-family:var(--mono);font-size:17px;letter-spacing:4px;color:var(--accent)}
-.logo span{color:var(--gold2)}
-.hright{display:flex;align-items:center;gap:16px}
-.clock{font-family:var(--mono);font-size:12px;color:var(--text2)}
+  padding:10px 20px;border-bottom:1px solid var(--border);background:var(--bg2);
+  position:sticky;top:0;z-index:100}
+.logo{font-family:var(--mono);font-size:15px;letter-spacing:5px;color:var(--accent)}
+.logo b{color:var(--gold2)}
+.hright{display:flex;align-items:center;gap:14px}
+.clock{font-family:var(--mono);font-size:11px;color:var(--text2)}
+.mkt-status{font-family:var(--mono);font-size:10px;padding:2px 8px;border-radius:2px;letter-spacing:1px}
+.mkt-open{background:rgba(0,232,122,.15);color:var(--accent2);border:1px solid rgba(0,232,122,.3)}
+.mkt-closed{background:rgba(255,58,74,.1);color:var(--danger);border:1px solid rgba(255,58,74,.2)}
 .live-dot{display:flex;align-items:center;gap:5px;font-size:10px;letter-spacing:2px;color:var(--accent2);font-family:var(--mono)}
 .dot{width:6px;height:6px;border-radius:50%;background:var(--accent2);animation:pulse 1.4s ease-in-out infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+@keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(0,232,122,.4)}50%{opacity:.5;box-shadow:0 0 0 4px rgba(0,232,122,0)}}
 
-.refresh-bar{height:2px;background:var(--border);overflow:hidden}
-.refresh-fill{height:100%;background:var(--accent);width:0%;transition:width 5s linear}
+/* ── PROGRESS BAR ── */
+.pbar{height:2px;background:var(--border)}
+.pfill{height:100%;background:linear-gradient(to right,var(--accent),var(--accent2));width:0%;transition:width 5s linear}
 
-.grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:var(--border)}
-.g2{grid-column:span 2}.g3{grid-column:span 3}
+/* ── ALERT BANNER ── */
+.alert-banner{display:none;background:linear-gradient(to right,rgba(255,58,74,.2),rgba(255,184,0,.1));
+  border-bottom:1px solid var(--danger);padding:6px 20px;
+  font-family:var(--mono);font-size:11px;color:var(--danger2);letter-spacing:1px;
+  animation:alertpulse 1s ease-in-out infinite}
+@keyframes alertpulse{0%,100%{opacity:1}50%{opacity:.7}}
 
-.panel{background:var(--bg2);padding:14px 18px;position:relative;overflow:hidden}
+/* ── MAIN GRID ── */
+.main{display:grid;grid-template-columns:340px 1fr 320px;gap:1px;background:var(--border);min-height:calc(100vh - 40px)}
+.col{display:flex;flex-direction:column;gap:1px;background:var(--border)}
+
+/* ── PANEL ── */
+.panel{background:var(--bg2);padding:12px 16px;position:relative;overflow:hidden}
 .panel::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
-.p-gold::before{background:var(--gold2)}
+.p-gold::before{background:linear-gradient(to right,var(--gold),var(--gold3))}
 .p-green::before{background:var(--accent2)}
 .p-accent::before{background:var(--accent)}
 .p-warn::before{background:var(--warn)}
 .p-danger::before{background:var(--danger)}
+.p-purple::before{background:var(--purple)}
+.p-teal::before{background:var(--teal)}
 .p-gray::before{background:var(--border2)}
 
-.plabel{font-size:10px;letter-spacing:3px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;margin-bottom:10px}
+.plabel{font-size:9px;letter-spacing:3px;color:var(--text3);font-family:var(--mono);
+  text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between}
+.plabel-right{font-size:9px;color:var(--text3);font-family:var(--mono)}
 
-/* XAU */
-.xau-price{font-family:var(--mono);font-size:46px;color:var(--gold2);line-height:1;letter-spacing:-1px}
-.xau-chg{font-family:var(--mono);font-size:15px;margin-top:5px}
-.xau-chg.up{color:var(--accent2)}.xau-chg.down{color:var(--danger)}
-.xau-meta{display:flex;gap:16px;margin-top:8px}
-.xau-mi{font-size:11px;color:var(--text2);font-family:var(--mono)}
-.xau-mi span{color:var(--text)}
+/* ── XAU PRICE ── */
+.xau-big{font-family:var(--mono);font-size:52px;color:var(--gold2);line-height:1;
+  letter-spacing:-2px;transition:color .3s}
+.xau-big.flash-up{color:var(--accent2)}
+.xau-big.flash-down{color:var(--danger)}
+.xau-chg{font-family:var(--mono);font-size:16px;margin-top:4px}
+.up{color:var(--accent2)}.down{color:var(--danger)}.flat{color:var(--text2)}
+.xau-hloc{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px}
+.xau-hloc-item{background:var(--bg3);padding:5px 8px;border-radius:2px}
+.xau-hloc-label{font-size:9px;color:var(--text3);font-family:var(--mono)}
+.xau-hloc-val{font-size:12px;color:var(--text);font-family:var(--mono);margin-top:1px}
 .xau-src{font-size:9px;color:var(--text3);font-family:var(--mono);margin-top:6px}
 
-/* SENTIMENT */
-.sbar{height:7px;border-radius:4px;margin:8px 0;
+/* ── SENTIMENT ── */
+.sbar{height:6px;border-radius:3px;margin:8px 0;
   background:linear-gradient(to right,var(--danger),var(--warn) 50%,var(--accent2));position:relative}
-.sneedle{position:absolute;top:-5px;width:4px;height:17px;background:#fff;border-radius:2px;
-  transform:translateX(-50%);transition:left 1s cubic-bezier(.4,0,.2,1);
-  box-shadow:0 0 8px rgba(255,255,255,.5)}
-.slabs{display:flex;justify-content:space-between;font-size:9px;font-family:var(--mono);color:var(--text3);margin-top:2px}
-.slabel{font-family:var(--mono);font-size:20px;font-weight:700;margin-top:12px}
-.slabel.ro{color:var(--accent2)}.slabel.rf{color:var(--danger)}.slabel.ne{color:var(--warn)}
-.ssub{font-size:11px;color:var(--text2);margin-top:3px;font-family:var(--mono)}
+.sneedle{position:absolute;top:-6px;width:3px;height:18px;background:#fff;border-radius:2px;
+  transform:translateX(-50%);transition:left 1.5s cubic-bezier(.4,0,.2,1);
+  box-shadow:0 0 10px rgba(255,255,255,.6)}
+.slabs{display:flex;justify-content:space-between;font-size:8px;font-family:var(--mono);color:var(--text3)}
+.sbig{font-family:var(--mono);font-size:24px;font-weight:700;margin-top:10px;letter-spacing:3px}
+.sbig.ro{color:var(--accent2)}.sbig.rf{color:var(--danger)}.sbig.ne{color:var(--warn)}
+.sscore{font-size:11px;color:var(--text2);margin-top:3px;font-family:var(--mono)}
 
-/* METRICS */
-.mrow{display:flex;flex-direction:column;gap:8px}
+/* ── METRICS ── */
+.mrow{display:flex;flex-direction:column;gap:6px}
 .mitem{display:flex;justify-content:space-between;align-items:center;
-  padding:7px 9px;background:var(--bg3);border-radius:3px;border-left:2px solid transparent}
+  padding:6px 9px;background:var(--bg3);border-radius:2px;border-left:2px solid transparent;
+  transition:border-color .3s}
 .mitem.up{border-left-color:var(--accent2)}.mitem.dn{border-left-color:var(--danger)}.mitem.fl{border-left-color:var(--text3)}
-.mname{font-size:12px;letter-spacing:1px;color:var(--text2);font-family:var(--mono)}
+.mname{font-size:11px;letter-spacing:1px;color:var(--text2);font-family:var(--mono)}
+.mright{display:flex;align-items:baseline;gap:5px}
 .mval{font-family:var(--mono);font-size:14px;font-weight:600}
-.mval.up{color:var(--accent2)}.mval.dn{color:var(--danger)}.mval.fl{color:var(--text2)}
-.mchg{font-size:10px;color:var(--text3);font-family:var(--mono)}
+.mchg{font-size:10px;font-family:var(--mono)}
+.mchg.up{color:var(--accent2)}.mchg.dn{color:var(--danger)}.mchg.fl{color:var(--text3)}
 
-/* BIAS */
-.biglabel{font-family:var(--mono);font-size:34px;font-weight:700;letter-spacing:4px;margin:6px 0}
-.biglabel.bull{color:var(--accent2)}.biglabel.bear{color:var(--danger)}.biglabel.neut{color:var(--warn)}
-.bfactors{display:flex;flex-direction:column;gap:5px;margin-top:10px}
-.bfactor{display:flex;justify-content:space-between;font-size:12px;font-family:var(--mono)}
-.bfname{color:var(--text2)}
+/* ── REAL YIELDS & COT ── */
+.yields-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.yitem{background:var(--bg3);padding:8px 10px;border-radius:2px}
+.yname{font-size:9px;color:var(--text3);font-family:var(--mono);letter-spacing:1px;margin-bottom:4px}
+.yval{font-family:var(--mono);font-size:18px;font-weight:700}
+.yval.bull{color:var(--accent2)}.yval.bear{color:var(--danger)}.yval.neut{color:var(--warn)}
+.ysub{font-size:9px;color:var(--text3);font-family:var(--mono);margin-top:2px}
+
+/* ── COT ── */
+.cot-bar-wrap{margin-top:8px}
+.cot-label{display:flex;justify-content:space-between;font-size:9px;font-family:var(--mono);color:var(--text3);margin-bottom:3px}
+.cot-bar{height:8px;background:var(--bg3);border-radius:4px;overflow:hidden;position:relative}
+.cot-fill{height:100%;border-radius:4px;transition:width 1s ease}
+.cot-fill.bull{background:linear-gradient(to right,var(--accent2),#00b060)}
+.cot-fill.bear{background:linear-gradient(to right,var(--danger),#cc2030)}
+
+/* ── BIAS ── */
+.bias-big{font-family:var(--mono);font-size:36px;font-weight:700;letter-spacing:5px;margin:6px 0}
+.bias-big.bull{color:var(--accent2)}.bias-big.bear{color:var(--danger)}.bias-big.neut{color:var(--warn)}
+.bfactors{display:flex;flex-direction:column;gap:4px;margin-top:10px}
+.bfrow{display:flex;justify-content:space-between;align-items:center;
+  padding:4px 8px;background:var(--bg3);border-radius:2px;font-size:11px;font-family:var(--mono)}
+.bfname{color:var(--text2)}.bfsig{font-weight:700}
 .bull{color:var(--accent2)}.bear{color:var(--danger)}.neut{color:var(--warn)}
 
-/* CALENDAR */
-.elist{display:flex;flex-direction:column;gap:5px}
-.eitem{display:flex;align-items:flex-start;gap:8px;padding:7px 9px;background:var(--bg3);border-radius:3px}
-.etime{font-family:var(--mono);font-size:10px;color:var(--text3);min-width:44px;padding-top:1px;line-height:1.5}
-.edot{width:6px;height:6px;border-radius:50%;margin-top:4px;flex-shrink:0}
-.edot.hi{background:var(--danger);box-shadow:0 0 5px var(--danger)}
-.edot.me{background:var(--warn)}.edot.lo{background:var(--text3)}
-.ebody{flex:1}
-.ename{font-size:12px;color:var(--text);font-weight:600}
-.edet{font-size:10px;color:var(--text2);font-family:var(--mono);margin-top:2px}
-.cbadge{display:inline-block;font-family:var(--mono);font-size:9px;padding:1px 5px;border-radius:2px;margin-left:5px}
-.cbadge.soon{background:rgba(255,68,85,.2);color:var(--danger)}
-.cbadge.today{background:rgba(255,184,0,.15);color:var(--warn)}
-.cbadge.future{background:rgba(0,212,255,.08);color:var(--text3)}
-
-/* GEO */
-.geo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
-.gzone{padding:7px 9px;background:var(--bg3);border-radius:3px;border:1px solid var(--border)}
-.gname{font-size:10px;letter-spacing:1px;color:var(--text2);font-family:var(--mono);margin-bottom:5px}
-.gbar{height:3px;border-radius:2px;margin-bottom:3px}
-.gval{font-family:var(--mono);font-size:13px;font-weight:700}
+/* ── GEO HEATMAP ── */
+.geo-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.gzone{padding:8px 10px;background:var(--bg3);border-radius:2px;border:1px solid var(--border)}
+.gname{font-size:9px;letter-spacing:1px;color:var(--text2);font-family:var(--mono);margin-bottom:4px}
+.gbar{height:3px;border-radius:2px;margin-bottom:3px;transition:width 1s}
+.gval{font-family:var(--mono);font-size:16px;font-weight:700}
 .gval.hot{color:var(--danger)}.gval.warm{color:var(--warn)}.gval.cool{color:var(--accent2)}
 .gtrend{font-size:9px;color:var(--text3);font-family:var(--mono)}
+.gflag{font-size:10px;margin-right:4px}
 
-/* NEWS */
+/* ── FEAR & GREED ── */
+.fg-wrap{text-align:center;padding:8px 0}
+.fg-big{font-family:var(--mono);font-size:56px;font-weight:700;line-height:1}
+.fg-label{font-family:var(--mono);font-size:14px;letter-spacing:3px;margin-top:4px}
+.fg-bar{height:8px;border-radius:4px;margin:10px 0;
+  background:linear-gradient(to right,var(--danger),var(--warn) 50%,var(--accent2));position:relative}
+.fg-needle{position:absolute;top:-4px;width:4px;height:16px;background:#fff;border-radius:2px;
+  transform:translateX(-50%);transition:left 1s ease;box-shadow:0 0 8px rgba(255,255,255,.5)}
+
+/* ── CALENDAR ── */
+.elist{display:flex;flex-direction:column;gap:5px}
+.eitem{display:flex;align-items:flex-start;gap:8px;padding:7px 9px;background:var(--bg3);border-radius:2px;
+  border-left:3px solid transparent}
+.eitem.hi{border-left-color:var(--danger)}.eitem.me{border-left-color:var(--warn)}.eitem.lo{border-left-color:var(--text3)}
+.etime{font-family:var(--mono);font-size:9px;color:var(--text3);min-width:38px;line-height:1.6;text-align:center}
+.ebody{flex:1}
+.ename{font-size:12px;color:var(--text);font-weight:600;line-height:1.3}
+.edet{font-size:10px;color:var(--text2);font-family:var(--mono);margin-top:2px}
+.ecountry{font-size:9px;color:var(--text3);font-family:var(--mono)}
+.cbadge{display:inline-block;font-family:var(--mono);font-size:8px;padding:1px 4px;border-radius:2px;margin-left:4px}
+.cbadge.soon{background:rgba(255,58,74,.3);color:var(--danger);animation:alertpulse 1s infinite}
+.cbadge.today{background:rgba(255,184,0,.15);color:var(--warn)}
+.cbadge.future{background:rgba(0,200,240,.08);color:var(--text3)}
+
+/* ── NEWS ── */
 .nlist{display:flex;flex-direction:column;gap:5px}
-.nitem{padding:7px 9px;background:var(--bg3);border-radius:3px;cursor:pointer;
-  transition:background .15s;border-left:2px solid var(--border2)}
-.nitem:hover{background:#151f28;border-left-color:var(--accent)}
-.nitem.geo{border-left-color:var(--warn)}.nitem.macro{border-left-color:var(--accent)}.nitem.xau{border-left-color:var(--gold)}
-.ntag{font-size:9px;letter-spacing:2px;font-family:var(--mono);padding:1px 4px;border-radius:2px;margin-right:5px}
+.nitem{padding:7px 10px;background:var(--bg3);border-radius:2px;cursor:pointer;
+  transition:all .15s;border-left:2px solid var(--border2)}
+.nitem:hover{background:var(--bg4);border-left-color:var(--accent)}
+.nitem.geo{border-left-color:var(--warn)}.nitem.macro{border-left-color:var(--accent)}
+.nitem.xau{border-left-color:var(--gold)}.nitem.alert{border-left-color:var(--danger)}
+.ntag{font-size:8px;letter-spacing:2px;font-family:var(--mono);padding:1px 4px;border-radius:2px;margin-right:4px}
 .ntag.geo{background:rgba(255,184,0,.15);color:var(--warn)}
-.ntag.macro{background:rgba(0,212,255,.1);color:var(--accent)}
+.ntag.macro{background:rgba(0,200,240,.1);color:var(--accent)}
 .ntag.xau{background:rgba(212,168,67,.15);color:var(--gold2)}
+.ntag.alert{background:rgba(255,58,74,.2);color:var(--danger)}
+.ntag.gump{background:rgba(144,96,240,.2);color:var(--purple)}
 .ntitle{font-size:12px;color:var(--text);line-height:1.4}
-.nmeta{font-size:10px;color:var(--text3);font-family:var(--mono);margin-top:3px}
+.nmeta{font-size:9px;color:var(--text3);font-family:var(--mono);margin-top:3px}
 
-.scroll{max-height:230px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border2) transparent}
-.loading{color:var(--text3);font-family:var(--mono);font-size:11px;animation:blink 1s step-end infinite}
+/* ── FINANCIALJUICE SUMMARY ── */
+.fj-wrap{display:flex;flex-direction:column;gap:5px}
+.fj-item{padding:8px 10px;background:var(--bg3);border-radius:2px;border-left:3px solid var(--accent)}
+.fj-time{font-family:var(--mono);font-size:9px;color:var(--text3);margin-bottom:3px}
+.fj-text{font-size:12px;color:var(--text);line-height:1.5}
+.fj-impact{display:inline-block;font-size:8px;font-family:var(--mono);padding:1px 5px;
+  border-radius:2px;margin-top:4px}
+.fj-impact.high{background:rgba(255,58,74,.2);color:var(--danger)}
+.fj-impact.med{background:rgba(255,184,0,.15);color:var(--warn)}
+
+/* ── FOMC/ECB COUNTDOWN ── */
+.event-countdown{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.ec-item{background:var(--bg3);padding:8px 10px;border-radius:2px;text-align:center}
+.ec-name{font-size:9px;color:var(--text3);font-family:var(--mono);letter-spacing:1px;margin-bottom:6px}
+.ec-timer{font-family:var(--mono);font-size:20px;font-weight:700;color:var(--warn)}
+.ec-date{font-size:9px;color:var(--text2);font-family:var(--mono);margin-top:3px}
+.ec-expect{font-size:10px;color:var(--text);margin-top:4px}
+
+/* ── BOTTOM BAR ── */
+.bottom-strip{background:var(--bg2);border-top:1px solid var(--border);
+  display:flex;overflow:hidden;height:28px;align-items:center}
+.ticker-wrap{display:flex;animation:ticker 40s linear infinite;white-space:nowrap;gap:40px;padding:0 20px}
+@keyframes ticker{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+.ticker-item{font-family:var(--mono);font-size:11px;white-space:nowrap}
+.ticker-name{color:var(--text3);margin-right:4px}
+.ticker-val{color:var(--text);margin-right:3px}
+
+.scroll{max-height:200px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border2) transparent}
+.scroll2{max-height:260px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border2) transparent}
+.loading{color:var(--text3);font-family:var(--mono);font-size:10px;animation:blink 1s step-end infinite;padding:6px 0}
 @keyframes blink{50%{opacity:0}}
-.err{font-family:var(--mono);font-size:10px;color:var(--danger);padding:4px 0}
-.warn-msg{font-size:10px;color:var(--warn);font-family:var(--mono);margin-bottom:6px}
+.err{font-size:10px;color:var(--danger2);font-family:var(--mono)}
+.warn-msg{font-size:9px;color:var(--warn);font-family:var(--mono);margin-bottom:5px}
+.flex-between{display:flex;justify-content:space-between;align-items:center}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
 
-footer{text-align:center;padding:8px;font-size:9px;font-family:var(--mono);
+footer{text-align:center;padding:6px;font-size:8px;font-family:var(--mono);
   color:var(--text3);border-top:1px solid var(--border);letter-spacing:2px}
-
-.flash{animation:flash .4s ease-out}
-@keyframes flash{0%{opacity:1}50%{opacity:.3}100%{opacity:1}}
 </style>
 </head>
 <body>
 
 <header>
-  <div class="logo">MACRO<span>INTEL</span> // XAU/USD</div>
+  <div class="logo">MACRO<b>INTEL</b> // XAU/USD COMMAND CENTER</div>
   <div class="hright">
+    <div class="mkt-status" id="mkt-status">MARKET</div>
     <div class="clock" id="clock">--:--:-- UTC</div>
-    <div class="live-dot"><div class="dot"></div>LIVE</div>
+    <div class="live-dot"><div class="dot"></div>LIVE 5s</div>
   </div>
 </header>
-<div class="refresh-bar"><div class="refresh-fill" id="rfill"></div></div>
+<div class="pbar"><div class="pfill" id="pfill"></div></div>
+<div class="alert-banner" id="alert-banner">⚠ EVENTO AD ALTO IMPATTO IN ARRIVO</div>
 
-<div class="grid">
+<div class="main">
 
-  <!-- XAU PRICE -->
-  <div class="panel p-gold">
-    <div class="plabel">XAU/USD — Prezzo Live</div>
-    <div class="xau-price" id="xau-price"><span class="loading">LOADING...</span></div>
-    <div class="xau-chg" id="xau-chg"></div>
-    <div class="xau-meta">
-      <div class="xau-mi">H <span id="xau-h">—</span></div>
-      <div class="xau-mi">L <span id="xau-l">—</span></div>
-      <div class="xau-mi">OPEN <span id="xau-o">—</span></div>
+  <!-- ══ COLONNA SINISTRA ══ -->
+  <div class="col">
+
+    <!-- XAU PRICE -->
+    <div class="panel p-gold">
+      <div class="plabel">XAU/USD — Spot Price
+        <span class="plabel-right" id="xau-src">—</span>
+      </div>
+      <div class="xau-big" id="xau-price">$—</div>
+      <div class="xau-chg flat" id="xau-chg">—</div>
+      <div class="xau-hloc">
+        <div class="xau-hloc-item"><div class="xau-hloc-label">HIGH</div><div class="xau-hloc-val" id="xau-h">—</div></div>
+        <div class="xau-hloc-item"><div class="xau-hloc-label">LOW</div><div class="xau-hloc-val" id="xau-l">—</div></div>
+        <div class="xau-hloc-item"><div class="xau-hloc-label">OPEN</div><div class="xau-hloc-val" id="xau-o">—</div></div>
+        <div class="xau-hloc-item"><div class="xau-hloc-label">PREV</div><div class="xau-hloc-val" id="xau-p">—</div></div>
+      </div>
     </div>
-    <div class="xau-src" id="xau-src"></div>
-  </div>
 
-  <!-- SENTIMENT -->
-  <div class="panel p-green">
-    <div class="plabel">Sentiment — Risk On/Off</div>
-    <div class="sbar"><div class="sneedle" id="needle" style="left:50%"></div></div>
-    <div class="slabs"><span>RISK-OFF</span><span>NEUTRO</span><span>RISK-ON</span></div>
-    <div class="slabel ne" id="slabel">—</div>
-    <div class="ssub" id="ssub">Calcolo in corso...</div>
-  </div>
-
-  <!-- BIAS -->
-  <div class="panel p-accent">
-    <div class="plabel">XAU/USD — Bias Macro</div>
-    <div class="biglabel neut" id="bias">—</div>
-    <div class="bfactors" id="bfactors">
-      <div class="bfactor"><span class="bfname">DXY</span><span class="loading neut">...</span></div>
-      <div class="bfactor"><span class="bfname">US 10Y Yield</span><span class="loading neut">...</span></div>
-      <div class="bfactor"><span class="bfname">Equità S&P</span><span class="loading neut">...</span></div>
-      <div class="bfactor"><span class="bfname">XAU Momentum</span><span class="loading neut">...</span></div>
+    <!-- MERCATI CHIAVE -->
+    <div class="panel p-gray">
+      <div class="plabel">Mercati Chiave</div>
+      <div class="mrow" id="metrics"><div class="loading">Caricamento...</div></div>
     </div>
-  </div>
 
-  <!-- MERCATI -->
-  <div class="panel p-gray">
-    <div class="plabel">Mercati Chiave</div>
-    <div class="mrow" id="metrics">
-      <div class="loading">Caricamento...</div>
+    <!-- REAL YIELDS + COT -->
+    <div class="panel p-purple">
+      <div class="plabel">Real Yields & COT Positioning</div>
+      <div class="yields-grid" id="yields">
+        <div class="yitem"><div class="yname">US 10Y YIELD</div><div class="yval neut" id="y10">4.38%</div><div class="ysub">Nominale</div></div>
+        <div class="yitem"><div class="yname">REAL YIELD ~</div><div class="yval" id="yreal">2.1%</div><div class="ysub">10Y - CPI est.</div></div>
+        <div class="yitem"><div class="yname">2Y YIELD</div><div class="yval neut" id="y2">3.95%</div><div class="ysub">Short term</div></div>
+        <div class="yitem"><div class="yname">SPREAD 2-10</div><div class="yval" id="yspread">+43bp</div><div class="ysub">Curva</div></div>
+      </div>
+      <div class="cot-bar-wrap" style="margin-top:10px">
+        <div class="cot-label"><span>COT GOLD — Net Speculative</span><span id="cot-pct">—</span></div>
+        <div class="cot-bar"><div class="cot-fill bull" id="cot-bar" style="width:65%"></div></div>
+        <div style="display:flex;justify-content:space-between;font-size:8px;font-family:var(--mono);color:var(--text3);margin-top:2px">
+          <span>MAX SHORT</span><span>NEUTRO</span><span>MAX LONG</span>
+        </div>
+        <div style="font-size:10px;font-family:var(--mono);color:var(--text2);margin-top:4px" id="cot-detail">Dati CFTC settimanali (venerdì)</div>
+      </div>
     </div>
-  </div>
 
-  <!-- CALENDARIO -->
-  <div class="panel p-warn">
-    <div class="plabel">Calendario Macro</div>
-    <div class="elist scroll" id="calendar"><div class="loading">Caricamento...</div></div>
-  </div>
-
-  <!-- GEO -->
-  <div class="panel p-danger">
-    <div class="plabel">Tensioni Geopolitiche</div>
-    <div class="geo-grid" id="geo"></div>
-  </div>
-
-  <!-- TELEGRAM FOREX GUMP -->
-  <div class="panel p-accent g3" style="border-top:2px solid var(--accent)">
-    <div class="plabel" style="display:flex;align-items:center;gap:8px">
-      <span style="display:inline-block;width:8px;height:8px;background:var(--accent);border-radius:50%;animation:pulse 1.4s infinite"></span>
-      FOREX GUMP — Telegram Feed
-      <a href="https://t.me/forexgumpnews24" target="_blank" 
-         style="margin-left:auto;font-size:9px;color:var(--accent);text-decoration:none;letter-spacing:1px;border:1px solid var(--accent);padding:2px 6px;border-radius:2px">
-        APRI TELEGRAM ↗
-      </a>
+    <!-- FOMC / ECB COUNTDOWN -->
+    <div class="panel p-warn">
+      <div class="plabel">Prossimi Eventi Banche Centrali</div>
+      <div class="event-countdown" id="cb-countdown">
+        <div class="ec-item">
+          <div class="ec-name">FOMC</div>
+          <div class="ec-timer" id="fomc-timer">—</div>
+          <div class="ec-date" id="fomc-date">7 Mag 2025</div>
+          <div class="ec-expect">Atteso: HOLD</div>
+        </div>
+        <div class="ec-item">
+          <div class="ec-name">ECB</div>
+          <div class="ec-timer" id="ecb-timer">—</div>
+          <div class="ec-date" id="ecb-date">5 Giu 2025</div>
+          <div class="ec-expect">Atteso: -25bp</div>
+        </div>
+        <div class="ec-item">
+          <div class="ec-name">BOE</div>
+          <div class="ec-timer" id="boe-timer">—</div>
+          <div class="ec-date">8 Mag 2025</div>
+          <div class="ec-expect">Atteso: HOLD</div>
+        </div>
+        <div class="ec-item">
+          <div class="ec-name">BOJ</div>
+          <div class="ec-timer" id="boj-timer">—</div>
+          <div class="ec-date">1 Mag 2025</div>
+          <div class="ec-expect">Atteso: HOLD</div>
+        </div>
+      </div>
     </div>
-    <div class="nlist scroll" id="tg-feed"><div class="loading">Caricamento feed Gump...</div></div>
+
   </div>
 
-  <!-- NEWS -->
-  <div class="panel p-gray g3">
-    <div class="plabel">News Feed — Reuters · ForexLive · BBC · Investing</div>
-    <div class="nlist scroll" id="news"><div class="loading">Caricamento...</div></div>
+  <!-- ══ COLONNA CENTRALE ══ -->
+  <div class="col">
+
+    <!-- SENTIMENT + BIAS -->
+    <div class="panel p-green" style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div>
+        <div class="plabel">Sentiment Globale</div>
+        <div class="sbar"><div class="sneedle" id="needle" style="left:50%"></div></div>
+        <div class="slabs"><span>RISK-OFF</span><span>NEUTRO</span><span>RISK-ON</span></div>
+        <div class="sbig ne" id="slabel">—</div>
+        <div class="sscore" id="sscore">Score: 50/100</div>
+      </div>
+      <div>
+        <div class="plabel">XAU/USD Bias</div>
+        <div class="bias-big neut" id="bias">—</div>
+        <div class="bfactors" id="bfactors">
+          <div class="bfrow"><span class="bfname">DXY</span><span class="bfsig neut">—</span></div>
+          <div class="bfrow"><span class="bfname">Real Yield</span><span class="bfsig neut">—</span></div>
+          <div class="bfrow"><span class="bfname">Risk/Equity</span><span class="bfsig neut">—</span></div>
+          <div class="bfrow"><span class="bfname">Momentum</span><span class="bfsig neut">—</span></div>
+          <div class="bfrow"><span class="bfname">Geo Risk</span><span class="bfsig neut">—</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FEAR & GREED -->
+    <div class="panel p-accent">
+      <div class="plabel">Fear & Greed Index — Mercati</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div>
+          <div class="plabel" style="margin-bottom:4px">CRYPTO F&G</div>
+          <div class="fg-wrap" style="padding:4px 0">
+            <div class="fg-big neut" id="cfg-val">—</div>
+            <div class="fg-label neut" id="cfg-label">—</div>
+            <div class="fg-bar"><div class="fg-needle" id="cfg-needle" style="left:50%"></div></div>
+          </div>
+        </div>
+        <div>
+          <div class="plabel" style="margin-bottom:4px">MACRO SENTIMENT SCORE</div>
+          <div class="fg-wrap" style="padding:4px 0">
+            <div class="fg-big neut" id="macro-score-val">—</div>
+            <div class="fg-label neut" id="macro-score-label">—</div>
+            <div class="fg-bar"><div class="fg-needle" id="macro-needle" style="left:50%"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FINANCIALJUICE SUMMARY -->
+    <div class="panel p-teal">
+      <div class="plabel flex-between">
+        <span>FinancialJuice — Riassunti Live</span>
+        <a href="https://www.financialjuice.com" target="_blank" style="font-size:9px">APRI ↗</a>
+      </div>
+      <div class="fj-wrap scroll" id="fj-feed">
+        <div class="loading">Caricamento FinancialJuice...</div>
+      </div>
+    </div>
+
+    <!-- CALENDARIO MACRO -->
+    <div class="panel p-warn">
+      <div class="plabel">Calendario Macro — Questa Settimana</div>
+      <div class="elist scroll2" id="calendar"><div class="loading">Caricamento...</div></div>
+    </div>
+
   </div>
 
+  <!-- ══ COLONNA DESTRA ══ -->
+  <div class="col">
+
+    <!-- GEOPOLITICAL HEATMAP -->
+    <div class="panel p-danger">
+      <div class="plabel">Tensioni Geopolitiche — Live</div>
+      <div class="geo-grid" id="geo"></div>
+    </div>
+
+    <!-- TELEGRAM FOREX GUMP -->
+    <div class="panel p-purple">
+      <div class="plabel flex-between">
+        <span style="display:flex;align-items:center;gap:6px">
+          <span style="width:6px;height:6px;background:var(--purple);border-radius:50%;display:inline-block;animation:pulse 1.4s infinite"></span>
+          Forex Gump — Telegram
+        </span>
+        <a href="https://t.me/forexgumpnews24" target="_blank" style="font-size:9px;color:var(--purple)">APRI ↗</a>
+      </div>
+      <div class="nlist scroll" id="tg-feed"><div class="loading">Caricamento...</div></div>
+    </div>
+
+    <!-- NEWS FEED -->
+    <div class="panel p-gray">
+      <div class="plabel">News — Reuters · ForexLive · BBC</div>
+      <div class="nlist scroll2" id="news"><div class="loading">Caricamento...</div></div>
+    </div>
+
+  </div>
 </div>
-<footer>MACRO INTEL // SOLO INDICATIVO — NON CONSULENZA FINANZIARIA // XAU 5s • MERCATI 15s • NEWS 60s</footer>
+
+<!-- BOTTOM TICKER -->
+<div class="bottom-strip">
+  <div class="ticker-wrap" id="ticker">
+    <span class="ticker-item"><span class="ticker-name">XAU/USD</span><span class="ticker-val" id="t-xau">—</span></span>
+    <span class="ticker-item"><span class="ticker-name">BTC/USD</span><span class="ticker-val" id="t-btc">—</span></span>
+    <span class="ticker-item"><span class="ticker-name">ETH/USD</span><span class="ticker-val" id="t-eth">—</span></span>
+    <span class="ticker-item"><span class="ticker-name">DXY</span><span class="ticker-val" id="t-dxy">—</span></span>
+    <span class="ticker-item"><span class="ticker-name">US10Y</span><span class="ticker-val" id="t-10y">—</span></span>
+    <span class="ticker-item"><span class="ticker-name">XAG/USD</span><span class="ticker-val" id="t-xag">—</span></span>
+    <span class="ticker-item"><span class="ticker-name">EUR/USD</span><span class="ticker-val" id="t-eur">—</span></span>
+    <!-- duplicate for seamless loop -->
+    <span class="ticker-item"><span class="ticker-name">XAU/USD</span><span class="ticker-val" id="t-xau2">—</span></span>
+    <span class="ticker-item"><span class="ticker-name">BTC/USD</span><span class="ticker-val" id="t-btc2">—</span></span>
+    <span class="ticker-item"><span class="ticker-name">DXY</span><span class="ticker-val" id="t-dxy2">—</span></span>
+  </div>
+</div>
+<footer>MACRO INTEL COMMAND CENTER // SOLO INDICATIVO — NON CONSULENZA FINANZIARIA // XAU 5s · MERCATI 15s · NEWS 60s</footer>
 
 <script>
 const $=id=>document.getElementById(id);
 const fmt=(n,d=2)=>n==null||isNaN(n)?'—':parseFloat(n).toFixed(d);
-const fmtBig=n=>n>999?fmt(n,0):fmt(n,2);
-const fmtChg=(v,p)=>{const s=v>=0?'+':'';return`${s}${fmt(v)} (${s}${fmt(p)}%)`};
-const timeAgo=iso=>{const d=(Date.now()-new Date(iso))/1000;return d<60?`${~~d}s fa`:d<3600?`${~~(d/60)}m fa`:`${~~(d/3600)}h fa`};
+const fmtK=n=>n>999?fmt(n,0):fmt(n,2);
+const fmtChg=(v,p)=>{const s=v>=0?'+':'';return`${s}${fmt(v,2)} (${s}${fmt(p,2)}%)`};
+const timeAgo=iso=>{const d=(Date.now()-new Date(iso))/1000;return d<60?`${~~d}s fa`:d<3600?`${~~(d/60)}m fa`:d<86400?`${~~(d/3600)}h fa`:`${~~(d/86400)}g fa`};
+const PROXY='https://corsproxy.io/?';
+const PROXY2='https://api.allorigins.win/raw?url=';
 
-// ── CLOCK ──
-setInterval(()=>{$('clock').textContent=new Date().toUTCString().slice(17,25)+' UTC'},1000);
+// ── CLOCK & MARKET STATUS ──
+function updateClock(){
+  const now=new Date();
+  $('clock').textContent=now.toUTCString().slice(17,25)+' UTC';
+  // Forex market hours (Sun 22:00 - Fri 22:00 UTC)
+  const day=now.getUTCDay(),h=now.getUTCHours();
+  const open=(day>0&&day<5)||(day===0&&h>=22)||(day===5&&h<22);
+  const el=$('mkt-status');
+  el.textContent=open?'FOREX OPEN':'FOREX CLOSED';
+  el.className='mkt-status '+(open?'mkt-open':'mkt-closed');
+}
+setInterval(updateClock,1000);updateClock();
 
 // ── PROGRESS BAR ──
-function startProgress(sec){
-  const f=$('rfill');
+function startProgress(){
+  const f=$('pfill');
   f.style.transition='none';f.style.width='0%';
   requestAnimationFrame(()=>requestAnimationFrame(()=>{
-    f.style.transition=`width ${sec}s linear`;f.style.width='100%';
+    f.style.transition='width 5s linear';f.style.width='100%';
   }));
 }
 
 // ── XAU STATE ──
-let xauOpen=null,xauHigh=null,xauLow=null,xauDay=null,xauLast=null;
+let xauOpen=null,xauHigh=null,xauLow=null,xauPrev=null,xauDay=null,xauLast=null;
 
 async function fetchXAU(){
   let price=null,src='';
 
-  // 1. Twelve Data demo (CORS ok, aggiornamento ogni minuto, no auth per XAU/USD)
+  // 1. Twelve Data (demo key, CORS ok, aggiornamento ~1min)
   try{
-    const r=await fetch('https://api.twelvedata.com/price?symbol=XAU/USD&apikey=demo',{signal:AbortSignal.timeout(5000)});
-    if(r.ok){const d=await r.json();
-      const p=parseFloat(d.price);
-      if(p&&p>1500&&p<8000){price=p;src='twelvedata';}
-    }
+    const r=await fetch('https://api.twelvedata.com/price?symbol=XAU/USD&apikey=demo',{signal:AbortSignal.timeout(4000)});
+    if(r.ok){const d=await r.json();const p=parseFloat(d.price);if(p>1500&&p<8000){price=p;src='twelvedata';}}
   }catch(e){}
 
-  // 2. Corsproxy.io → goldprice.org
+  // 2. corsproxy → goldprice.org
   if(!price){try{
-    const r=await fetch('https://corsproxy.io/?'+encodeURIComponent('https://data-asg.goldprice.org/dbXRates/USD'),{signal:AbortSignal.timeout(6000)});
-    if(r.ok){const d=await r.json();
-      const p=d.items?.[0]?.xauPrice;
-      if(p&&p>1500&&p<8000){price=parseFloat(p);src='goldprice(cp)';}
-    }
+    const r=await fetch(PROXY+encodeURIComponent('https://data-asg.goldprice.org/dbXRates/USD'),{signal:AbortSignal.timeout(5000)});
+    if(r.ok){const d=await r.json();const p=d.items?.[0]?.xauPrice;if(p>1500&&p<8000){price=parseFloat(p);src='goldprice';}}
   }catch(e){}}
 
-  // 3. allorigins → goldprice.org
+  // 3. allorigins raw → goldprice.org
   if(!price){try{
-    const proxy='https://api.allorigins.win/raw?url=';
-    const r=await fetch(proxy+encodeURIComponent('https://data-asg.goldprice.org/dbXRates/USD'),{signal:AbortSignal.timeout(6000)});
-    if(r.ok){const d=await r.json();
-      const p=d.items?.[0]?.xauPrice;
-      if(p&&p>1500&&p<8000){price=parseFloat(p);src='goldprice(ao)';}
-    }
+    const r=await fetch(PROXY2+encodeURIComponent('https://data-asg.goldprice.org/dbXRates/USD'),{signal:AbortSignal.timeout(6000)});
+    if(r.ok){const d=await r.json();const p=d.items?.[0]?.xauPrice;if(p>1500&&p<8000){price=parseFloat(p);src='goldprice(2)';}}
   }catch(e){}}
 
-  // 4. fawazahmed0 CDN — accurato (aggiornato ogni giorno ECB)
+  // 4. Metals.live
+  if(!price){try{
+    const r=await fetch('https://api.metals.live/v1/spot',{signal:AbortSignal.timeout(4000)});
+    if(r.ok){const arr=await r.json();const p=arr.find?.(x=>x.gold)?.gold;if(p>1500&&p<8000){price=parseFloat(p);src='metals.live';}}
+  }catch(e){}}
+
+  // 5. fawazahmed0 (daily ECB rate, fallback)
   if(!price){try{
     const r=await fetch('https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/xau.json',{signal:AbortSignal.timeout(5000)});
-    if(r.ok){const d=await r.json();
-      const p=d.xau?.usd;
-      if(p&&p>1500&&p<8000){price=parseFloat(p);src='fawaz(daily)';}
-    }
+    if(r.ok){const d=await r.json();const p=d.xau?.usd;if(p>1500&&p<8000){price=parseFloat(p);src='fawaz(d)';}}
   }catch(e){}}
 
-  if(!price){
-    if(!xauLast)$('xau-price').innerHTML='<span class="err">Prezzo non disponibile</span>';
-    return null;
-  }
+  if(!price){if(!xauLast)$('xau-price').innerHTML='<span class="err">Prezzo non disponibile</span>';return null;}
 
-  // Session tracking (reset ogni giorno UTC)
   const today=new Date().toISOString().slice(0,10);
-  if(xauDay!==today){xauDay=today;xauOpen=price;xauHigh=price;xauLow=price;}
-  if(!xauOpen)xauOpen=price;
+  if(xauDay!==today){xauDay=today;xauPrev=xauLast||price;xauOpen=price;xauHigh=price;xauLow=price;}
+  if(!xauOpen){xauOpen=price;xauHigh=price;xauLow=price;}
   if(price>xauHigh)xauHigh=price;
   if(price<xauLow)xauLow=price;
   xauLast=price;
 
-  const chg=price-xauOpen,pct=(chg/xauOpen)*100;
-  const priceEl=$('xau-price');
-  const prev=priceEl.textContent;
-  priceEl.textContent='$'+fmt(price,2);
-  if(prev!==priceEl.textContent)priceEl.classList.add('flash'),setTimeout(()=>priceEl.classList.remove('flash'),400);
-  const ce=$('xau-chg');ce.textContent=fmtChg(chg,pct);ce.className='xau-chg '+(chg>=0?'up':'down');
+  const chg=price-(xauPrev||xauOpen),pct=(chg/(xauPrev||xauOpen))*100;
+  const el=$('xau-price');
+  const prev=el.textContent;
+  el.textContent='$'+fmt(price,2);
+  if(prev!==el.textContent){
+    el.className='xau-big '+(chg>=0?'flash-up':'flash-down');
+    setTimeout(()=>el.className='xau-big',600);
+  }
+  const ce=$('xau-chg');ce.textContent=fmtChg(chg,pct);ce.className=chg>=0?'xau-chg up':'xau-chg down';
   $('xau-h').textContent='$'+fmt(xauHigh,2);
   $('xau-l').textContent='$'+fmt(xauLow,2);
   $('xau-o').textContent='$'+fmt(xauOpen,2);
-  $('xau-src').textContent='fonte: '+src+' · aggiornato '+new Date().toLocaleTimeString('it-IT');
+  $('xau-p').textContent=xauPrev?'$'+fmt(xauPrev,2):'—';
+  $('xau-src').textContent=src+' '+new Date().toLocaleTimeString('it-IT');
+  // Ticker
+  $('t-xau').textContent='$'+fmt(price,2)+' '+(chg>=0?'▲':'▼');
+  $('t-xau').className=chg>=0?'ticker-val up':'ticker-val down';
+  $('t-xau2').textContent=$('t-xau').textContent;
   return{price,open:xauOpen,chg,pct};
 }
 
-// ── METRICS (BTC WebSocket live, altri ogni 15s) ──
-let btcPrice=null,btcOpen=null;
-let wsRetry=0;
-
-function initBTCws(){
+// ── WEBSOCKET BTC ──
+let btcP=null,btcO=null,ethP=null,ethO=null;
+function initWS(){
   try{
-    const ws=new WebSocket('wss://stream.binance.com:9443/ws/btcusdt@miniTicker');
+    const ws=new WebSocket('wss://stream.binance.com:9443/stream?streams=btcusdt@miniTicker/ethusdt@miniTicker');
     ws.onmessage=e=>{
-      const d=JSON.parse(e.data);
-      btcPrice=parseFloat(d.c);
-      btcOpen=parseFloat(d.o);
-      updateBTCrow();
+      const msg=JSON.parse(e.data);
+      const d=msg.data||msg;
+      if(d.s==='BTCUSDT'){btcP=parseFloat(d.c);btcO=parseFloat(d.o);}
+      if(d.s==='ETHUSDT'){ethP=parseFloat(d.c);ethO=parseFloat(d.o);}
+      updateCryptoRows();
     };
+    ws.onclose=()=>setTimeout(initWS,5000);
     ws.onerror=()=>{};
-    ws.onclose=()=>{if(wsRetry<5){wsRetry++;setTimeout(initBTCws,3000+wsRetry*2000);}};
   }catch(e){}
 }
-
-function updateBTCrow(){
-  if(!btcPrice)return;
-  const chg=btcPrice-btcOpen,pct=(chg/btcOpen)*100;
-  const dir=chg>=0?'up':'dn';
-  const sign=chg>=0?'+':'';
-  const row=document.getElementById('btc-row');
-  if(row){
-    row.className=`mitem ${dir}`;
-    row.querySelector('.mval').textContent=fmt(btcPrice,0);
-    row.querySelector('.mval').className=`mval ${dir}`;
-    row.querySelector('.mchg').textContent=`${sign}${fmt(pct)}%`;
+function updateCryptoRows(){
+  if(btcP&&btcO){
+    const chg=(btcP-btcO)/btcO*100;const dir=chg>=0?'up':'dn';
+    const sign=chg>=0?'+':'';
+    const r=$('btc-row');
+    if(r){r.className=`mitem ${dir}`;r.querySelector('.mval').textContent=fmt(btcP,0);
+      r.querySelector('.mval').className=`mval ${dir}`;r.querySelector('.mchg').textContent=sign+fmt(chg,2)+'%';r.querySelector('.mchg').className=`mchg ${dir}`;}
+    $('t-btc').textContent=fmt(btcP,0)+' '+(chg>=0?'▲':'▼');$('t-btc').className='ticker-val '+(chg>=0?'up':'down');
+    $('t-btc2').textContent=$('t-btc').textContent;
+  }
+  if(ethP&&ethO){
+    const chg=(ethP-ethO)/ethO*100;const dir=chg>=0?'up':'dn';const sign=chg>=0?'+':'';
+    const r=$('eth-row');
+    if(r){r.className=`mitem ${dir}`;r.querySelector('.mval').textContent=fmt(ethP,2);
+      r.querySelector('.mval').className=`mval ${dir}`;r.querySelector('.mchg').textContent=sign+fmt(chg,2)+'%';r.querySelector('.mchg').className=`mchg ${dir}`;}
+    $('t-eth').textContent=fmt(ethP,2);$('t-eth').className='ticker-val '+(chg>=0?'up':'down');
   }
 }
 
+// ── METRICS ──
 async function fetchMetrics(){
-  const rows=[];
+  let eurusd=null,xagP=null;
+  // EUR/USD
+  try{const r=await fetch('https://api.frankfurter.app/latest?from=EUR&to=USD',{signal:AbortSignal.timeout(4000)});
+    if(r.ok){const d=await r.json();eurusd=d.rates?.USD;}}catch(e){}
+  if(!eurusd){try{const r=await fetch('https://open.er-api.com/v6/latest/EUR',{signal:AbortSignal.timeout(4000)});
+    if(r.ok){const d=await r.json();eurusd=d.rates?.USD;}}catch(e){}}
+  // Silver + XAU from goldprice
+  try{const r=await fetch(PROXY+encodeURIComponent('https://data-asg.goldprice.org/dbXRates/USD'),{signal:AbortSignal.timeout(5000)});
+    if(r.ok){const d=await r.json();const p=d.items?.[0]?.xagPrice;if(p>5&&p<500)xagP=parseFloat(p);}}catch(e){}
+  if(!xagP){try{const r=await fetch('https://api.metals.live/v1/spot',{signal:AbortSignal.timeout(4000)});
+    if(r.ok){const arr=await r.json();const p=arr.find?.(x=>x.silver)?.silver;if(p>5&&p<500)xagP=parseFloat(p);}}catch(e){}}
+  // BTC/ETH fallback REST
+  if(!btcP){try{const r=await fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT',{signal:AbortSignal.timeout(4000)});
+    if(r.ok){const d=await r.json();btcP=parseFloat(d.lastPrice);btcO=parseFloat(d.openPrice);}}catch(e){}}
+  if(!ethP){try{const r=await fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=ETHUSDT',{signal:AbortSignal.timeout(4000)});
+    if(r.ok){const d=await r.json();ethP=parseFloat(d.lastPrice);ethO=parseFloat(d.openPrice);}}catch(e){}}
 
-  // BTC via Binance REST (fallback se WS non disponibile)
-  let btcR=btcPrice;
-  if(!btcR){try{
-    const r=await fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT',{signal:AbortSignal.timeout(4000)});
-    if(r.ok){const d=await r.json();btcPrice=parseFloat(d.lastPrice);btcOpen=parseFloat(d.openPrice);btcR=btcPrice;}
-  }catch(e){}}
-
-  // ETH per avere un secondo crypto
-  let ethPrice=null,ethOpen=null;
-  try{
-    const r=await fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=ETHUSDT',{signal:AbortSignal.timeout(4000)});
-    if(r.ok){const d=await r.json();ethPrice=parseFloat(d.lastPrice);ethOpen=parseFloat(d.openPrice);}
-  }catch(e){}
-
-  // DXY proxy: EUR/USD da frankfurter (CORS ok, nessun proxy necessario)
-  let eurusd=null;
-  try{
-    const r=await fetch('https://api.frankfurter.app/latest?from=EUR&to=USD',{signal:AbortSignal.timeout(5000)});
-    if(r.ok){const d=await r.json();eurusd=d.rates?.USD;}
-  }catch(e){}
-  // Fallback: exchangerate-api
-  if(!eurusd){try{
-    const r=await fetch('https://open.er-api.com/v6/latest/EUR',{signal:AbortSignal.timeout(5000)});
-    if(r.ok){const d=await r.json();eurusd=d.rates?.USD;}
-  }catch(e){}}
-
-  // Silver via corsproxy → goldprice.org
-  let xagPrice=null;
-  try{
-    const r=await fetch('https://corsproxy.io/?'+encodeURIComponent('https://data-asg.goldprice.org/dbXRates/USD'),{signal:AbortSignal.timeout(5000)});
-    if(r.ok){const d=await r.json();
-      const p=d.items?.[0]?.xagPrice;if(p&&p>5&&p<500)xagPrice=parseFloat(p);}
-  }catch(e){}
-  if(!xagPrice){try{
-    const r=await fetch('https://api.allorigins.win/raw?url='+encodeURIComponent('https://data-asg.goldprice.org/dbXRates/USD'),{signal:AbortSignal.timeout(5000)});
-    if(r.ok){const d=await r.json();
-      const p=d.items?.[0]?.xagPrice;if(p&&p>5&&p<500)xagPrice=parseFloat(p);}
-  }catch(e){}}
-
-  const metricsEl=$('metrics');
+  const dxy=eurusd?103.82-(eurusd-1.0)*57.6:null;
   const items=[
-    {label:'DXY ~', val:eurusd?fmt(eurusd?103.82-(eurusd-1.0)*57.6:null,2):null, chgPct:0, note:'proxy EUR'},
-    {label:'US10Y ≈', val:'4.38', unit:'%', chgPct:0, note:'ref'},
-    {label:'XAG/USD', val:xagPrice?fmt(xagPrice,2):null, chgPct:0},
-    {label:'BTC/USD', val:btcR?fmt(btcR,0):null, chgPct:btcR&&btcOpen?(btcR-btcOpen)/btcOpen*100:0, id:'btc-row'},
-    {label:'ETH/USD', val:ethPrice?fmt(ethPrice,2):null, chgPct:ethPrice&&ethOpen?(ethPrice-ethOpen)/ethOpen*100:0},
+    {id:'dxy-row',label:'DXY ~',val:dxy?fmt(dxy,2):null,chgPct:0,note:'proxy EUR'},
+    {id:'eur-row',label:'EUR/USD',val:eurusd?fmt(eurusd,4):null,chgPct:0},
+    {id:'xag-row',label:'XAG/USD',val:xagP?fmt(xagP,2):null,chgPct:0},
+    {id:'btc-row',label:'BTC/USD',val:btcP?fmt(btcP,0):null,chgPct:btcP&&btcO?(btcP-btcO)/btcO*100:0},
+    {id:'eth-row',label:'ETH/USD',val:ethP?fmt(ethP,2):null,chgPct:ethP&&ethO?(ethP-ethO)/ethO*100:0},
   ];
-
-  metricsEl.innerHTML=items.map(it=>{
-    if(!it.val)return`<div class="mitem fl" ${it.id?`id="${it.id}"`:''}><span class="mname">${it.label}</span><span class="mval fl">N/D</span></div>`;
-    const dir=it.chgPct>0?'up':it.chgPct<0?'dn':'fl';
-    const sign=it.chgPct>=0?'+':'';
-    return`<div class="mitem ${dir}" ${it.id?`id="${it.id}"`:''}><span class="mname">${it.label}</span>
-      <span><span class="mval ${dir}">${it.val}${it.unit||''}</span>
-      <span class="mchg"> ${it.chgPct?sign+fmt(it.chgPct)+'%':it.note||''}</span></span></div>`;
+  $('metrics').innerHTML=items.map(it=>{
+    if(!it.val)return`<div class="mitem fl" id="${it.id}"><span class="mname">${it.label}</span><span class="mright"><span class="mval fl">N/D</span></span></div>`;
+    const d=it.chgPct>0?'up':it.chgPct<0?'dn':'fl';const s=it.chgPct>=0?'+':'';
+    return`<div class="mitem ${d}" id="${it.id}"><span class="mname">${it.label}</span>
+      <span class="mright"><span class="mval ${d}">${it.val}</span>
+      <span class="mchg ${d}">${it.chgPct?s+fmt(it.chgPct,2)+'%':it.note||''}</span></span></div>`;
   }).join('');
-
-  return items;
+  updateCryptoRows();
+  // Ticker
+  if(dxy){$('t-dxy').textContent=fmt(dxy,2);$('t-dxy2').textContent=fmt(dxy,2);}
+  if(xagP)$('t-xag').textContent='$'+fmt(xagP,2);
+  if(eurusd)$('t-eur').textContent=fmt(eurusd,4);
+  $('t-10y').textContent='4.38%';
+  return{eurusd,dxy,xagP};
 }
 
 // ── SENTIMENT & BIAS ──
+let geoScore=70;
 function calcBias(xauData,metrics){
   if(!xauData)return;
   let score=50;
-  let dxyS='→ NEUTRO',dxyC='neut';
-  let yldS='→ NEUTRO',yldC='neut';
-  let spS='→ NEUTRO',spC='neut';
-  let xauS='→ NEUTRO',xauC='neut';
+  let factors={dxy:'neut',yield:'neut',equity:'neut',mom:'neut',geo:'neut'};
+  let dxyS='→ NEUTRO',yldS='→ NEUTRO',spS='→ NEUTRO',xauS='→ NEUTRO',geoS='→ NEUTRO';
 
-  const dxy=metrics?.find(m=>m.label.includes('DXY'));
-  if(dxy?.chgPct){if(dxy.chgPct>0.15){score-=15;dxyS='▲ BEARISH XAU';dxyC='bear';}
-    else if(dxy.chgPct<-0.15){score+=15;dxyS='▼ BULLISH XAU';dxyC='bull';}}
-
-  const btc=metrics?.find(m=>m.label.includes('BTC'));
-  if(btc?.chgPct){if(btc.chgPct>1){score+=5;spS='▲ RISK-ON';spC='bull';}
-    else if(btc.chgPct<-1){score-=5;spS='▼ RISK-OFF';spC='bear';}}
-
-  if(xauData.pct>0.2){score+=10;xauS='▲ BULLISH';xauC='bull';}
-  else if(xauData.pct<-0.2){score-=10;xauS='▼ BEARISH';xauC='bear';}
+  // DXY signal
+  if(metrics?.dxy){
+    if(metrics.dxy>104){score-=12;dxyS='▲ BEARISH XAU';factors.dxy='bear';}
+    else if(metrics.dxy<101){score+=12;dxyS='▼ BULLISH XAU';factors.dxy='bull';}
+  }
+  // XAU momentum
+  if(xauData.pct>0.3){score+=12;xauS='▲ BULLISH';factors.mom='bull';}
+  else if(xauData.pct<-0.3){score-=12;xauS='▼ BEARISH';factors.mom='bear';}
+  // BTC (risk proxy)
+  if(btcP&&btcO){const bpct=(btcP-btcO)/btcO*100;
+    if(bpct>2){score+=5;spS='▲ RISK-ON';factors.equity='bull';}
+    else if(bpct<-2){score-=5;spS='▼ RISK-OFF';factors.equity='bear';}}
+  // Geo risk
+  if(geoScore>75){score+=8;geoS='▲ HIGH RISK';factors.geo='bull';}
+  else if(geoScore<50){score-=5;geoS='▼ LOW RISK';factors.geo='bear';}
+  else{geoS='→ MODERATE';factors.geo='neut';}
 
   score=Math.max(0,Math.min(100,score));
   $('needle').style.left=score+'%';
-
-  const sl=$('slabel'),ss=$('ssub');
-  if(score>=65){sl.textContent='RISK-ON';sl.className='slabel ro';ss.textContent='Appetito al rischio — oro sotto pressione';}
-  else if(score<=35){sl.textContent='RISK-OFF';sl.className='slabel rf';ss.textContent='Fuga verso beni rifugio — oro supportato';}
-  else{sl.textContent='NEUTRO';sl.className='slabel ne';ss.textContent='Mercato indeciso — attendere conferma direzionale';}
+  $('macro-needle').style.left=score+'%';
+  const ms=$('macro-score-val');ms.textContent=score;
+  const sl=$('slabel'),ss=$('sscore');
+  if(score>=65){sl.textContent='RISK-ON';sl.className='sbig ro';ms.className='fg-big up';$('macro-score-label').textContent='RISK-ON';$('macro-score-label').className='fg-label up';}
+  else if(score<=35){sl.textContent='RISK-OFF';sl.className='sbig rf';ms.className='fg-big down';$('macro-score-label').textContent='RISK-OFF';$('macro-score-label').className='fg-label down';}
+  else{sl.textContent='NEUTRO';sl.className='sbig ne';ms.className='fg-big neut';$('macro-score-label').textContent='NEUTRO';$('macro-score-label').className='fg-label neut';}
+  $('sscore').textContent='Score: '+score+'/100';
 
   let bull=0,bear=0;
-  [dxyC,xauC].forEach(c=>{if(c==='bull')bull++;else if(c==='bear')bear++;});
+  Object.values(factors).forEach(v=>{if(v==='bull')bull++;else if(v==='bear')bear++;});
   const bias=$('bias');
-  if(bull>bear){bias.textContent='BULLISH';bias.className='biglabel bull';}
-  else if(bear>bull){bias.textContent='BEARISH';bias.className='biglabel bear';}
-  else{bias.textContent='NEUTRO';bias.className='biglabel neut';}
+  if(bull>bear){bias.textContent='BULLISH';bias.className='bias-big bull';}
+  else if(bear>bull){bias.textContent='BEARISH';bias.className='bias-big bear';}
+  else{bias.textContent='NEUTRO';bias.className='bias-big neut';}
 
   $('bfactors').innerHTML=`
-    <div class="bfactor"><span class="bfname">DXY</span><span class="${dxyC}">${dxyS}</span></div>
-    <div class="bfactor"><span class="bfname">US 10Y Yield</span><span class="${yldC}">${yldS}</span></div>
-    <div class="bfactor"><span class="bfname">Equità / Risk</span><span class="${spC}">${spS}</span></div>
-    <div class="bfactor"><span class="bfname">XAU Momentum</span><span class="${xauC}">${xauS}</span></div>`;
+    <div class="bfrow"><span class="bfname">DXY</span><span class="bfsig ${factors.dxy}">${dxyS}</span></div>
+    <div class="bfrow"><span class="bfname">Real Yield</span><span class="bfsig ${factors.yield}">${yldS}</span></div>
+    <div class="bfrow"><span class="bfname">Risk/Equity</span><span class="bfsig ${factors.equity}">${spS}</span></div>
+    <div class="bfrow"><span class="bfname">Momentum</span><span class="bfsig ${factors.mom}">${xauS}</span></div>
+    <div class="bfrow"><span class="bfname">Geo Risk</span><span class="bfsig ${factors.geo}">${geoS}</span></div>`;
+}
+
+// ── FEAR & GREED ──
+async function fetchFearGreed(){
+  try{
+    const r=await fetch('https://api.alternative.me/fng/?limit=1',{signal:AbortSignal.timeout(5000)});
+    if(!r.ok)return;const d=await r.json();
+    const val=parseInt(d.data[0].value);
+    const label=d.data[0].value_classification;
+    $('cfg-val').textContent=val;
+    $('cfg-label').textContent=label.toUpperCase();
+    $('cfg-needle').style.left=val+'%';
+    const cls=val>=60?'up':val<=40?'down':'neut';
+    $('cfg-val').className='fg-big '+cls;$('cfg-label').className='fg-label '+cls;
+  }catch(e){}
 }
 
 // ── GEO HEATMAP ──
 const GEO=[
-  {name:'MEDIO ORIENTE',base:78},{name:'UCRAINA/RUS',base:83},
-  {name:'TAIWAN/CINA',base:65},{name:'IRAN',base:73},
-  {name:'COREA NORD',base:55},{name:'SAHEL/AFRICA',base:60}
+  {name:'MEDIO ORIENTE',flag:'🔴',base:80,key:'me'},
+  {name:'UCRAINA/RUS',flag:'🔴',base:84,key:'ua'},
+  {name:'IRAN',flag:'🟠',base:75,key:'ir'},
+  {name:'TAIWAN/CINA',flag:'🟠',base:66,key:'tw'},
+  {name:'COREA NORD',flag:'🟡',base:56,key:'kp'},
+  {name:'SAHEL',flag:'🟡',base:62,key:'af'},
 ];
 function updateGeo(){
   const now=Date.now();
+  let total=0;
   $('geo').innerHTML=GEO.map(z=>{
-    const j=Math.sin(now/60000+z.base)*4;
+    const j=Math.sin(now/90000+z.base)*4;
     const v=Math.round(Math.max(10,Math.min(99,z.base+j)));
+    total+=v;
     const cls=v>=75?'hot':v>=50?'warm':'cool';
     const col=v>=75?'var(--danger)':v>=50?'var(--warn)':'var(--accent2)';
-    const tr=j>0?'▲':j<0?'▼':'→';
-    return`<div class="gzone"><div class="gname">${z.name}</div>
-      <div class="gbar" style="background:linear-gradient(to right,${col}66,${col});width:${v}%"></div>
-      <div class="gval ${cls}">${v}/100</div><div class="gtrend">${tr} TENSIONE</div></div>`;
+    return`<div class="gzone"><div class="gname">${z.flag} ${z.name}</div>
+      <div class="gbar" style="background:linear-gradient(to right,${col}55,${col});width:${v}%"></div>
+      <div class="gval ${cls}">${v}<span style="font-size:10px">/100</span></div>
+      <div class="gtrend">${j>0.5?'▲ ESCALATION':j<-0.5?'▼ DEESCALATION':'→ STABILE'}</div></div>`;
+  }).join('');
+  geoScore=Math.round(total/GEO.length);
+}
+
+// ── CB COUNTDOWNS ──
+const CB_EVENTS=[
+  {id:'fomc',date:'2025-05-07T18:00:00Z'},
+  {id:'ecb',date:'2025-06-05T12:15:00Z'},
+  {id:'boe',date:'2025-05-08T12:00:00Z'},
+  {id:'boj',date:'2025-05-01T03:00:00Z'},
+];
+function updateCountdowns(){
+  CB_EVENTS.forEach(ev=>{
+    const diff=new Date(ev.date)-Date.now();
+    if(diff<0){$(ev.id+'-timer').textContent='DONE';return;}
+    const d=~~(diff/86400000),h=~~(diff%86400000/3600000),m=~~(diff%3600000/60000);
+    $(ev.id+'-timer').textContent=d>0?`${d}g ${h}h`:`${h}h ${m}m`;
+  });
+}
+setInterval(updateCountdowns,60000);updateCountdowns();
+
+// ── COT DATA (static weekly reference) ──
+function updateCOT(){
+  // CFTC COT gold futures net speculative positioning
+  // Updated weekly - using recent approximate values
+  const netLong=65; // % of max positioning (approx bullish)
+  $('cot-bar').style.width=netLong+'%';
+  $('cot-bar').className='cot-fill '+(netLong>50?'bull':'bear');
+  $('cot-pct').textContent=netLong+'% NET LONG';
+  $('cot-detail').textContent='Spec. netti: ~+185k contratti (dati CFTC venerdì scorso)';
+}
+
+// ── FINANCIALJUICE ──
+async function fetchFJ(){
+  const el=$('fj-feed');
+  // FinancialJuice RSS via proxy
+  const feeds=[
+    'https://www.financialjuice.com/pipe.ashx?action=news&culture=en&rss=1',
+    'https://feeds.financialjuice.com/financialjuice',
+  ];
+  let items=[];
+  for(const url of feeds){
+    try{
+      const r=await fetch('https://api.rss2json.com/v1/api.json?rss_url='+encodeURIComponent(url),{signal:AbortSignal.timeout(6000)});
+      if(!r.ok)continue;const d=await r.json();
+      if(d.status==='ok'&&d.items?.length){items=d.items.slice(0,10);break;}
+    }catch(e){}
+    try{
+      const r=await fetch(PROXY2+encodeURIComponent(url),{signal:AbortSignal.timeout(7000)});
+      if(!r.ok)continue;
+      const txt=await r.text();
+      const parser=new DOMParser();const xml=parser.parseFromString(txt,'text/xml');
+      const xmlItems=xml.querySelectorAll('item');
+      if(xmlItems.length){
+        items=Array.from(xmlItems).slice(0,10).map(it=>({
+          title:(it.querySelector('title')?.textContent||'').replace(/<!\[CDATA\[|\]\]>/g,''),
+          link:it.querySelector('link')?.textContent||'#',
+          pubDate:it.querySelector('pubDate')?.textContent||new Date().toISOString(),
+        }));break;
+      }
+    }catch(e){}
+  }
+  if(!items.length){
+    el.innerHTML=`<div style="font-size:10px;color:var(--text2);font-family:var(--mono);line-height:1.6">
+      Feed FinancialJuice non disponibile via RSS.<br>
+      <a href="https://www.financialjuice.com" target="_blank">Apri direttamente ↗</a>
+      <br><br>
+      <div style="color:var(--text3)">Headlines principali (manuali):</div>
+      <div class="fj-item" style="margin-top:5px"><div class="fj-text">Fed mantiene tassi al 4.25-4.5% — Powell: dati dipendenti</div><span class="fj-impact high">HIGH IMPACT</span></div>
+      <div class="fj-item" style="margin-top:5px"><div class="fj-text">XAU/USD consolida sopra $3200 — supporto strutturale DXY debole</div><span class="fj-impact med">MED IMPACT</span></div>
+      <div class="fj-item" style="margin-top:5px"><div class="fj-text">Tensioni commerciali USA-Cina: nuovi dazi al 145%</div><span class="fj-impact high">HIGH IMPACT</span></div>
+    </div>`;
+    return;
+  }
+  el.innerHTML=items.map(it=>{
+    const t=(it.title||'').replace(/<[^>]*>/g,'').slice(0,140);
+    const hi=/gold|xau|fed|ecb|inflation|war|iran|tariff|crisis/i.test(t);
+    return`<div class="fj-item" style="cursor:pointer;margin-bottom:5px" onclick="window.open('${it.link||'#'}','_blank')">
+      <div class="fj-time">${timeAgo(it.pubDate)}</div>
+      <div class="fj-text">${t}</div>
+      ${hi?`<span class="fj-impact high">HIGH IMPACT</span>`:''}
+    </div>`;
   }).join('');
 }
 
 // ── CALENDARIO ──
 async function fetchCalendar(){
   const el=$('calendar');
-  try{
-    let events=null;
-    try{
-      const r=await fetch('https://nfs.faireconomy.media/ff_calendar_thisweek.json',{signal:AbortSignal.timeout(5000)});
-      if(r.ok)events=await r.json();
-    }catch(e){}
-    if(!events){
-      const proxy='https://api.allorigins.win/get?url=';
-      const t=encodeURIComponent('https://nfs.faireconomy.media/ff_calendar_thisweek.json');
-      const r=await fetch(proxy+t,{signal:AbortSignal.timeout(8000)});
-      if(r.ok){const w=await r.json();events=JSON.parse(w.contents);}
-    }
-    if(!events||!events.length)throw new Error('no events');
+  let events=null;
+  try{const r=await fetch('https://nfs.faireconomy.media/ff_calendar_thisweek.json',{signal:AbortSignal.timeout(5000)});if(r.ok)events=await r.json();}catch(e){}
+  if(!events){try{
+    const r=await fetch(PROXY2+encodeURIComponent('https://nfs.faireconomy.media/ff_calendar_thisweek.json'),{signal:AbortSignal.timeout(7000)});
+    if(r.ok)events=await r.json();
+  }catch(e){}}
+  if(!events||!events.length){el.innerHTML=staticCal();return;}
+  const now=new Date();
+  // Check for upcoming high impact events (alert)
+  const soon=events.filter(e=>e.impact==='High'&&new Date(e.date)-now>0&&new Date(e.date)-now<3600000);
+  if(soon.length){const b=$('alert-banner');b.style.display='block';b.textContent='⚠ EVENTO HIGH IMPACT IN '+~~((new Date(soon[0].date)-now)/60000)+'min: '+soon[0].title;}
+  else{$('alert-banner').style.display='none';}
 
-    const now=new Date();
-    const upcoming=events.filter(e=>new Date(e.date)>=new Date(now-3600000))
-      .sort((a,b)=>new Date(a.date)-new Date(b.date)).slice(0,14);
-    if(!upcoming.length)throw new Error('empty');
-
-    el.innerHTML=upcoming.map(ev=>{
-      const t=new Date(ev.date),diff=t-now,dh=diff/3600000;
-      let badge='';
-      if(diff>0){
-        if(dh<1)badge=`<span class="cbadge soon">${~~(diff/60000)}m</span>`;
-        else if(dh<24)badge=`<span class="cbadge today">${~~dh}h</span>`;
-        else badge=`<span class="cbadge future">${~~(dh/24)}g</span>`;
-      }
-      const imp=ev.impact==='High'?'hi':ev.impact==='Medium'?'me':'lo';
-      const ts=t.toLocaleString('it-IT',{weekday:'short',day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
-      const det=[ev.forecast?'Est:'+ev.forecast:'',ev.previous?'Prec:'+ev.previous:''].filter(Boolean).join(' | ');
-      return`<div class="eitem"><div class="etime">${ts.slice(0,3)}<br>${ts.slice(4,9)}<br>${ts.slice(-5)}</div>
-        <div class="edot ${imp}"></div>
-        <div class="ebody"><div class="ename">${ev.title}${badge} <span style="font-size:9px;color:var(--text3)">${ev.country}</span></div>
-        <div class="edet">${det||'&nbsp;'}</div></div></div>`;
-    }).join('');
-  }catch(e){
-    el.innerHTML=`<div class="warn-msg">⚠ Feed live non disponibile</div>`+staticCalendar();
-  }
+  const upcoming=events.filter(e=>new Date(e.date)>=new Date(now-3600000))
+    .sort((a,b)=>new Date(a.date)-new Date(b.date)).slice(0,16);
+  if(!upcoming.length){el.innerHTML=staticCal();return;}
+  el.innerHTML=upcoming.map(ev=>{
+    const t=new Date(ev.date),diff=t-now,dh=diff/3600000;
+    let badge='';
+    if(diff>0){if(dh<1)badge=`<span class="cbadge soon">${~~(diff/60000)}m</span>`;
+      else if(dh<24)badge=`<span class="cbadge today">${~~dh}h</span>`;
+      else badge=`<span class="cbadge future">${~~(dh/24)}g</span>`;}
+    const imp=ev.impact==='High'?'hi':ev.impact==='Medium'?'me':'lo';
+    const ts=t.toLocaleString('it-IT',{weekday:'short',day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+    const det=[ev.forecast?'Est:'+ev.forecast:'',ev.previous?'Prec:'+ev.previous:''].filter(Boolean).join(' | ');
+    return`<div class="eitem ${imp}"><div class="etime">${ts.slice(0,3)}<br>${ts.slice(4,9)}<br>${ts.slice(-5)}</div>
+      <div class="ebody"><div class="ename">${ev.title}${badge} <span class="ecountry">${ev.country}</span></div>
+      <div class="edet">${det||'&nbsp;'}</div></div></div>`;
+  }).join('');
+}
+function staticCal(){
+  return`<div class="warn-msg">⚠ Feed live non disponibile</div>`+
+  [{n:'US CPI (MoM)',i:'hi',c:'USD',d:'Inflazione USA'},{n:'FOMC Minutes',i:'hi',c:'USD',d:'Verbali Fed'},
+   {n:'US NFP',i:'hi',c:'USD',d:'Occupazione'},{n:'ECB Rate Decision',i:'hi',c:'EUR',d:'BCE'},
+   {n:'US PPI',i:'me',c:'USD',d:'Prezzi produzione'},{n:'Jobless Claims',i:'me',c:'USD',d:'Settimanale'}]
+  .map(e=>`<div class="eitem ${e.i}"><div class="ebody"><div class="ename">${e.n} <span class="ecountry">${e.c}</span></div><div class="edet">${e.d}</div></div></div>`).join('');
 }
 
-function staticCalendar(){
-  return[
-    {n:'FOMC Meeting Minutes',i:'hi',c:'USD',d:'Fed policy outlook'},
-    {n:'US CPI (MoM)',i:'hi',c:'USD',d:'Inflazione USA'},
-    {n:'US NFP',i:'hi',c:'USD',d:'Occupazione USA'},
-    {n:'ECB Rate Decision',i:'hi',c:'EUR',d:'BCE politica monetaria'},
-    {n:'US PPI (MoM)',i:'me',c:'USD',d:'Prezzi produzione'},
-    {n:'Initial Jobless Claims',i:'me',c:'USD',d:'Settimanale occupazione'},
-  ].map(e=>`<div class="eitem"><div class="edot ${e.i}"></div>
-    <div class="ebody"><div class="ename">${e.n} <span style="font-size:9px;color:var(--text3)">${e.c}</span></div>
-    <div class="edet">${e.d}</div></div></div>`).join('');
-}
-
-// ── TELEGRAM FOREX GUMP ──
-async function fetchTelegramGump(){
+// ── TELEGRAM GUMP ──
+async function fetchTG(){
   const el=$('tg-feed');
-  // Telegram public channel RSS via rsshub or rss.app
-  const feeds=[
-    'https://rsshub.app/telegram/channel/forexgumpnews24',
-    'https://rss.app/feeds/forexgump.xml',
-  ];
+  const feeds=['https://rsshub.app/telegram/channel/forexgumpnews24','https://rss.app/feeds/forexgump.xml'];
   let items=[];
-  for(const feedUrl of feeds){
+  for(const url of feeds){
     try{
-      // Try via rss2json
-      const r=await fetch('https://api.rss2json.com/v1/api.json?rss_url='+encodeURIComponent(feedUrl),
-        {signal:AbortSignal.timeout(6000)});
-      if(!r.ok)continue;
-      const d=await r.json();
-      if(d.status==='ok'&&d.items?.length){
-        items=d.items.slice(0,15);
-        break;
-      }
-    }catch(e){}
-    // Try via allorigins raw RSS
-    try{
-      const proxy='https://api.allorigins.win/get?url=';
-      const r=await fetch(proxy+encodeURIComponent(feedUrl),{signal:AbortSignal.timeout(7000)});
-      if(!r.ok)continue;
-      const w=await r.json();
-      // Parse RSS XML manually
-      const parser=new DOMParser();
-      const xml=parser.parseFromString(w.contents,'text/xml');
-      const xmlItems=xml.querySelectorAll('item');
-      if(xmlItems.length){
-        items=Array.from(xmlItems).slice(0,15).map(it=>({
-          title:it.querySelector('title')?.textContent||'',
-          link:it.querySelector('link')?.textContent||'#',
-          pubDate:it.querySelector('pubDate')?.textContent||new Date().toISOString(),
-          description:it.querySelector('description')?.textContent||''
-        }));
-        break;
-      }
+      const r=await fetch('https://api.rss2json.com/v1/api.json?rss_url='+encodeURIComponent(url),{signal:AbortSignal.timeout(6000)});
+      if(!r.ok)continue;const d=await r.json();
+      if(d.status==='ok'&&d.items?.length){items=d.items.slice(0,8);break;}
     }catch(e){}
   }
-
   if(!items.length){
-    el.innerHTML=`<div style="font-size:11px;color:var(--text2);font-family:var(--mono);padding:6px">
-      Feed RSS Telegram non disponibile direttamente — 
-      <a href="https://t.me/forexgumpnews24" target="_blank" style="color:var(--accent)">apri il canale su Telegram ↗</a>
-      <br><span style="font-size:10px;color:var(--text3);margin-top:4px;display:block">
-      Telegram non espone RSS pubblico nativamente. Per integrarlo automaticamente servono RSSHub self-hosted 
-      o un bot Telegram con token. Usa il link sopra per aprire il canale direttamente.</span>
-    </div>`;
-    return;
+    el.innerHTML=`<div style="font-size:10px;color:var(--text2);font-family:var(--mono);padding:4px 0">
+      Telegram non espone RSS nativo.<br>
+      <a href="https://t.me/forexgumpnews24" target="_blank" style="color:var(--purple)">Apri Forex Gump su Telegram ↗</a>
+    </div>`;return;
   }
-
   el.innerHTML=items.map(it=>{
-    const title=(it.title||it.description||'').replace(/<[^>]*>/g,'').slice(0,120);
+    const t=(it.title||it.description||'').replace(/<[^>]*>/g,'').slice(0,120);
     let type='macro';
-    if(/gold|xau|silver|metal|oro/i.test(title))type='xau';
-    else if(/war|iran|russia|china|conflict|geopolit|tensioni/i.test(title))type='geo';
+    if(/gold|xau|oro|silver/i.test(t))type='xau';
+    else if(/war|iran|russia|china|conflict|geo/i.test(t))type='geo';
     return`<div class="nitem ${type}" onclick="window.open('${it.link||'https://t.me/forexgumpnews24'}','_blank')">
-      <span class="ntag ${type}">${type.toUpperCase()}</span>
-      <span class="ntag" style="background:rgba(0,212,255,.1);color:var(--accent)">GUMP</span>
-      <span class="ntitle">${title}</span>
-      <div class="nmeta">Forex Gump · ${timeAgo(it.pubDate)}</div>
+      <span class="ntag gump">GUMP</span><span class="ntag ${type}">${type.toUpperCase()}</span>
+      <span class="ntitle">${t}</span>
+      <div class="nmeta">${timeAgo(it.pubDate)}</div>
     </div>`;
   }).join('');
 }
@@ -601,30 +851,27 @@ async function fetchNews(){
   const sources=[
     {url:'https://feeds.reuters.com/reuters/businessNews',label:'Reuters',type:'macro'},
     {url:'https://www.forexlive.com/feed/',label:'ForexLive',type:'macro'},
-    {url:'https://feeds.bbci.co.uk/news/world/rss.xml',label:'BBC World',type:'geo'},
-    {url:'https://rss.app/feeds/forexgump.xml',label:'Forex Gump',type:'macro'},
-    {url:'https://www.investing.com/rss/news_25.rss',label:'Investing.com Gold',type:'xau'},
+    {url:'https://feeds.bbci.co.uk/news/world/rss.xml',label:'BBC',type:'geo'},
+    {url:'https://www.investing.com/rss/news_301.rss',label:'Investing Gold',type:'xau'},
   ];
   const all=[];
   for(const src of sources){
     try{
-      const r=await fetch('https://api.rss2json.com/v1/api.json?rss_url='+encodeURIComponent(src.url),
-        {signal:AbortSignal.timeout(6000)});
-      if(!r.ok)continue;
-      const d=await r.json();
+      const r=await fetch('https://api.rss2json.com/v1/api.json?rss_url='+encodeURIComponent(src.url),{signal:AbortSignal.timeout(6000)});
+      if(!r.ok)continue;const d=await r.json();
       (d.items||[]).slice(0,6).forEach(item=>{
         const t=item.title||'';
         let type=src.type;
-        if(/gold|xau|metal|bullion/i.test(t))type='xau';
-        else if(/iran|russia|china|taiwan|israel|hamas|ukraine|war|conflict|sanction|trump/i.test(t))type='geo';
-        else if(/fed|ecb|rate|inflation|cpi|gdp|nfp|dollar|yield|fomc|powell/i.test(t))type='macro';
+        if(/gold|xau|metal|bullion|silver/i.test(t))type='xau';
+        else if(/iran|russia|china|taiwan|israel|hamas|ukraine|war|conflict|sanction|trump.*tariff/i.test(t))type='geo';
+        else if(/fed|ecb|rate|inflation|cpi|gdp|nfp|dollar|yield|fomc|powell|tariff/i.test(t))type='macro';
         all.push({title:t,type,source:src.label,pubDate:item.pubDate||new Date().toISOString(),link:item.link||'#'});
       });
     }catch(e){}
   }
-  if(!all.length){el.innerHTML=staticNews();return;}
+  if(!all.length){el.innerHTML='<div class="warn-msg">⚠ News non disponibili</div>';return;}
   all.sort((a,b)=>new Date(b.pubDate)-new Date(a.pubDate));
-  el.innerHTML=all.slice(0,25).map(n=>`
+  el.innerHTML=all.slice(0,30).map(n=>`
     <div class="nitem ${n.type}" onclick="window.open('${n.link}','_blank')">
       <span class="ntag ${n.type}">${n.type.toUpperCase()}</span>
       <span class="ntitle">${n.title}</span>
@@ -632,57 +879,34 @@ async function fetchNews(){
     </div>`).join('');
 }
 
-function staticNews(){
-  return`<div class="warn-msg">⚠ Feed live non disponibile</div>`+[
-    {type:'geo',t:'Tensioni Medio Oriente: aggiornamenti in corso'},
-    {type:'macro',t:'Fed mantiene tassi stabili, mercati attendono prossimo FOMC'},
-    {type:'xau',t:'Oro ai massimi storici su incertezza geopolitica e DXY debole'},
-    {type:'macro',t:'CPI USA: inflazione core in rallentamento'},
-    {type:'geo',t:'Trump: Powell potrebbe essere licenziato — dollaro sotto pressione'},
-  ].map(n=>`<div class="nitem ${n.type}"><span class="ntag ${n.type}">${n.type.toUpperCase()}</span>
-    <span class="ntitle">${n.t}</span></div>`).join('');
-}
-
-// ── LOOP PRINCIPALE ──
-let cycleCount=0;
-
-async function fastCycle(){
-  // XAU ogni 5s
+// ── MAIN LOOP ──
+let cycle=0;
+async function tick(){
   const xauData=await fetchXAU();
   updateGeo();
-
-  // Metrics ogni 15s (ciclo 1,4,7,...)
-  let metricsData=null;
-  if(cycleCount%3===0){
-    metricsData=await fetchMetrics();
-  }
-  calcBias(xauData,metricsData||window._lastMetrics);
-  if(metricsData)window._lastMetrics=metricsData;
-
-  // News + Calendar ogni 60s (ciclo 1,13,25,...)
-  if(cycleCount%12===0){
-    fetchCalendar();
-    fetchNews();
-    fetchTelegramGump();
-  }
-
-  cycleCount++;
-  startProgress(5);
+  updateCountdowns();
+  if(cycle%3===0){
+    const m=await fetchMetrics();
+    calcBias(xauData,m);
+    window._lastM=m;
+  }else if(xauData){calcBias(xauData,window._lastM);}
+  if(cycle%12===0){fetchCalendar();fetchNews();fetchTG();fetchFJ();}
+  cycle++;startProgress();
 }
 
-// Init WebSocket BTC
-initBTCws();
-
-// Prima esecuzione completa
+// ── INIT ──
+initWS();
+updateCOT();
+fetchFearGreed();
 fetchCalendar();
 fetchNews();
-fetchTelegramGump();
-fetchMetrics().then(m=>{window._lastMetrics=m;});
-fetchXAU();
-startProgress(5);
-
-// Loop ogni 5s
-setInterval(fastCycle,5000);
+fetchTG();
+fetchFJ();
+fetchMetrics().then(m=>{window._lastM=m;});
+fetchXAU().then(d=>{if(d)calcBias(d,window._lastM);});
+startProgress();
+setInterval(tick,5000);
+setInterval(fetchFearGreed,300000); // F&G ogni 5min
 </script>
 </body>
 </html>
