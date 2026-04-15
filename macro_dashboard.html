@@ -251,40 +251,40 @@ let xauOpen=null,xauHigh=null,xauLow=null,xauDay=null,xauLast=null;
 async function fetchXAU(){
   let price=null,src='';
 
-  // 1. goldprice.org - fonte primaria, prezzi spot aggiornati continuamente
+  // 1. Twelve Data demo (CORS ok, aggiornamento ogni minuto, no auth per XAU/USD)
   try{
-    const r=await fetch('https://data-asg.goldprice.org/dbXRates/USD',{signal:AbortSignal.timeout(4000)});
+    const r=await fetch('https://api.twelvedata.com/price?symbol=XAU/USD&apikey=demo',{signal:AbortSignal.timeout(5000)});
     if(r.ok){const d=await r.json();
-      const p=d.items?.[0]?.xauPrice;
-      if(p&&p>1500&&p<8000){price=parseFloat(p);src='goldprice.org';}
+      const p=parseFloat(d.price);
+      if(p&&p>1500&&p<8000){price=p;src='twelvedata';}
     }
   }catch(e){}
 
-  // 2. goldprice.org via allorigins (se CORS blocca richiesta diretta)
+  // 2. Corsproxy.io → goldprice.org
   if(!price){try{
-    const proxy='https://api.allorigins.win/get?url=';
-    const t=encodeURIComponent('https://data-asg.goldprice.org/dbXRates/USD');
-    const r=await fetch(proxy+t,{signal:AbortSignal.timeout(6000)});
-    if(r.ok){const w=await r.json();const d=JSON.parse(w.contents);
+    const r=await fetch('https://corsproxy.io/?'+encodeURIComponent('https://data-asg.goldprice.org/dbXRates/USD'),{signal:AbortSignal.timeout(6000)});
+    if(r.ok){const d=await r.json();
       const p=d.items?.[0]?.xauPrice;
-      if(p&&p>1500&&p<8000){price=parseFloat(p);src='goldprice.org(p)';}
+      if(p&&p>1500&&p<8000){price=parseFloat(p);src='goldprice(cp)';}
     }
   }catch(e){}}
 
-  // 3. Metals-API public endpoint
+  // 3. allorigins → goldprice.org
   if(!price){try{
-    const r=await fetch('https://api.metals.live/v1/spot/gold',{signal:AbortSignal.timeout(4000)});
+    const proxy='https://api.allorigins.win/raw?url=';
+    const r=await fetch(proxy+encodeURIComponent('https://data-asg.goldprice.org/dbXRates/USD'),{signal:AbortSignal.timeout(6000)});
     if(r.ok){const d=await r.json();
-      const p=Array.isArray(d)?d[0]?.gold:d?.gold||d?.price;
-      if(p&&p>1500&&p<8000){price=parseFloat(p);src='metals.live';}
+      const p=d.items?.[0]?.xauPrice;
+      if(p&&p>1500&&p<8000){price=parseFloat(p);src='goldprice(ao)';}
     }
   }catch(e){}}
 
-  // 4. open.er-api XAU base - dati giornalieri ma accurati come fallback
+  // 4. fawazahmed0 CDN — accurato (aggiornato ogni giorno ECB)
   if(!price){try{
-    const r=await fetch('https://open.er-api.com/v6/latest/XAU',{signal:AbortSignal.timeout(5000)});
+    const r=await fetch('https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/xau.json',{signal:AbortSignal.timeout(5000)});
     if(r.ok){const d=await r.json();
-      const p=d.rates?.USD;if(p&&p>1500&&p<8000){price=parseFloat(p);src='er-api';}
+      const p=d.xau?.usd;
+      if(p&&p>1500&&p<8000){price=parseFloat(p);src='fawaz(daily)';}
     }
   }catch(e){}}
 
@@ -363,25 +363,28 @@ async function fetchMetrics(){
     if(r.ok){const d=await r.json();ethPrice=parseFloat(d.lastPrice);ethOpen=parseFloat(d.openPrice);}
   }catch(e){}
 
-  // DXY proxy: EUR/USD da frankfurter (EUR base → USD)
+  // DXY proxy: EUR/USD da frankfurter (CORS ok, nessun proxy necessario)
   let eurusd=null;
   try{
     const r=await fetch('https://api.frankfurter.app/latest?from=EUR&to=USD',{signal:AbortSignal.timeout(5000)});
-    if(r.ok){const d=await r.json();eurusd=d.rates?.USD;} // eurusd = quanto vale 1 EUR in USD
+    if(r.ok){const d=await r.json();eurusd=d.rates?.USD;}
   }catch(e){}
+  // Fallback: exchangerate-api
+  if(!eurusd){try{
+    const r=await fetch('https://open.er-api.com/v6/latest/EUR',{signal:AbortSignal.timeout(5000)});
+    if(r.ok){const d=await r.json();eurusd=d.rates?.USD;}
+  }catch(e){}}
 
-  // Silver via goldprice.org (stesso endpoint XAU, stesso fetch)
+  // Silver via corsproxy → goldprice.org
   let xagPrice=null;
   try{
-    const r=await fetch('https://data-asg.goldprice.org/dbXRates/USD',{signal:AbortSignal.timeout(4000)});
+    const r=await fetch('https://corsproxy.io/?'+encodeURIComponent('https://data-asg.goldprice.org/dbXRates/USD'),{signal:AbortSignal.timeout(5000)});
     if(r.ok){const d=await r.json();
       const p=d.items?.[0]?.xagPrice;if(p&&p>5&&p<500)xagPrice=parseFloat(p);}
   }catch(e){}
   if(!xagPrice){try{
-    const proxy='https://api.allorigins.win/get?url=';
-    const t=encodeURIComponent('https://data-asg.goldprice.org/dbXRates/USD');
-    const r=await fetch(proxy+t,{signal:AbortSignal.timeout(5000)});
-    if(r.ok){const w=await r.json();const d=JSON.parse(w.contents);
+    const r=await fetch('https://api.allorigins.win/raw?url='+encodeURIComponent('https://data-asg.goldprice.org/dbXRates/USD'),{signal:AbortSignal.timeout(5000)});
+    if(r.ok){const d=await r.json();
       const p=d.items?.[0]?.xagPrice;if(p&&p>5&&p<500)xagPrice=parseFloat(p);}
   }catch(e){}}
 
